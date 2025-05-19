@@ -1,11 +1,18 @@
-from fastapi import FastAPI,Request
-
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional, Dict
 
 app = FastAPI()
 
+# Define the structure of the Slack payload
+class SlackEvent(BaseModel):
+    type: Optional[str]
+    challenge: Optional[str]
+    event: Optional[Dict]
+
 @app.post("/slack/events")
-async def slack_events(request:Request):
-    data = await request.json
-    if data.get("type") == "url_verification":
-        return {"challenge": data.get("challenge")}
-    
+def slack_events(payload: SlackEvent):  # FastAPI automatically parses JSON into `payload`
+    if payload.type == "url_verification":
+        return {"challenge": payload.challenge}
+    else:
+        return {"ok": True}
